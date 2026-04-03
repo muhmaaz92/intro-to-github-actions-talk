@@ -5,7 +5,6 @@ on:
     branches: 
       - main
 
-# FIX: Opt-in to Node 24 to clear the runner deprecation warnings
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
@@ -15,46 +14,43 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # STEP 1: COMMENTED OUT FOR STEP 2
-    # - name: Make PR Fail
-    #   run: exit 1
+      # Ensure this is commented out to allow the PR to pass!
+      # - name: Make PR Fail
+      #   run: exit 1
 
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        # Note: 5.0.x will still show a 'support' warning. 
-        # Change to 8.0.x if you want a completely clean log.
-        dotnet-version: 5.0.x 
-    
-    - name: Install dependencies
-      run: dotnet restore "${{ github.workspace }}/mywebapp/mywebapp.sln"
-    
-    - name: Build
-      run: dotnet build "${{ github.workspace }}/mywebapp/mywebapp.sln" --configuration Release --no-restore
-    
-    - name: Test
-      run: |
-        dotnet test "${{ github.workspace }}/mywebapp/mywebapp.sln" --no-restore --verbosity normal  --logger "trx;LogFileName=test-results.trx"
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 5.0.x 
 
-    - name: Test Report
-      # Updated to v1.9.1 (or latest) to fix 'set-output' deprecations
-      uses: dorny/test-reporter@v1.9.1 
-      if: success() || failure()
-      with:
-        name: XUnit Tests
-        path: ${{ github.workspace }}/mywebapp/tests/TestResults/*.trx
-        reporter: dotnet-trx
+      - name: Install dependencies
+        run: dotnet restore "${{ github.workspace }}/mywebapp/mywebapp.sln"
       
-    - name: Publish
-      run: |
-        dotnet publish "${{ github.workspace }}/mywebapp/src/mywebapp.csproj" -c Release -o mywebapp
-    
-    - name: Upload a Build Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: mywebappbuildartifacts
-        path: mywebapp/**
-        if-no-files-found: error
-        retention-days: 90
+      - name: Build
+        run: dotnet build "${{ github.workspace }}/mywebapp/mywebapp.sln" --configuration Release --no-restore
+      
+      - name: Test
+        run: |
+          dotnet test "${{ github.workspace }}/mywebapp/mywebapp.sln" --no-restore --verbosity normal --logger "trx;LogFileName=test-results.trx"
+
+      - name: Test Report
+        uses: dorny/test-reporter@v1.9.1
+        if: success() || failure()
+        with:
+          name: XUnit Tests
+          path: "**/test-results.trx"
+          reporter: dotnet-trx
+        
+      - name: Publish
+        # We run this from the 'src' directory to ensure Program.cs is found
+        working-directory: ./mywebapp/src
+        run: dotnet publish mywebapp.csproj -c Release -o ../../publish
+      
+      - name: Upload a Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mywebappbuildartifacts
+          path: ./publish/**
+          if-no-files-found: error
