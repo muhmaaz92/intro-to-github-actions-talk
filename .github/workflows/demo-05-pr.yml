@@ -1,5 +1,6 @@
 name: Demo 05 - Pull Request
 
+# Controls when the action will run. 
 on:
   pull_request:
     branches: 
@@ -13,12 +14,12 @@ jobs:
 
     steps:
 
+    # STEP 1: UNCOMMENT THE FOLLOWING TWO LINES TO MAKE THE PR FAIL
     # - name: Make PR Fail
-    #  run: exit 1
+    #   run: exit 1
 
     - uses: actions/checkout@v2
 
-      
     - name: Setup .NET Core 5
       uses: actions/setup-dotnet@v1
       with:
