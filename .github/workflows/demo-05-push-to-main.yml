@@ -30,22 +30,24 @@ jobs:
         dotnet test "${{ github.workspace }}/mywebapp/mywebapp.sln" --no-restore --verbosity normal --logger "trx;LogFileName=test-results.trx"
 
     - name: Test Report
-      uses: dorny/test-reporter@v1.5.0
+      uses: dorny/test-reporter@v1.9.1
       if: success() || failure()
       with:
         name: XUnit Tests
-        path: ${{ github.workspace }}/mywebapp/tests/TestResults/*.trx
+        path: "**/test-results.trx"
         reporter: dotnet-trx
       
     - name: Publish
-      run: |
-        dotnet publish "${{ github.workspace }}/mywebapp/src/mywebapp.csproj" -c Release -o mywebapp_publish
+      # We use the exact logic from your working PR workflow here
+      working-directory: ./mywebapp/src
+      run: dotnet publish mywebapp.csproj -c Release -o ../../publish
     
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v4
       with:
         name: mywebappbuildartifacts
-        path: mywebapp_publish/**
+        # This matches the -o ../../publish path above
+        path: ./publish/
         if-no-files-found: error
         retention-days: 90
 
@@ -58,15 +60,8 @@ jobs:
       url: 'https://mywebapp-maaz-dev.azurewebsites.net'
 
     steps:
-    - uses: actions/checkout@v4
-      
-    - name: Setup .NET 8
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 8.0.x
-    
     - name: 'Login via Azure CLI'
-      uses: azure/login@v1
+      uses: azure/login@v2
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
     
@@ -74,14 +69,14 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: 'mywebappbuildartifacts'
-        path: 'mywebapp_publish'
+        path: 'publish_temp'
    
     - name: 'Run Azure webapp deploy'
       uses: azure/webapps-deploy@v3
       with: 
         app-name: 'mywebapp-maaz'
         slot-name: 'dev'
-        package: 'mywebapp_publish'
+        package: 'publish_temp'
         
   deploy-QA:
     name: "Deploy To Azure QA env"
@@ -92,15 +87,8 @@ jobs:
       url: 'https://mywebapp-maaz-qa.azurewebsites.net'
 
     steps:
-    - uses: actions/checkout@v4
-      
-    - name: Setup .NET 8
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 8.0.x
-    
     - name: 'Login via Azure CLI'
-      uses: azure/login@v1
+      uses: azure/login@v2
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
     
@@ -108,14 +96,14 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: 'mywebappbuildartifacts'
-        path: 'mywebapp_publish'
+        path: 'publish_temp'
    
     - name: 'Run Azure webapp deploy'
       uses: azure/webapps-deploy@v3
       with: 
         app-name: 'mywebapp-maaz'
         slot-name: 'qa'
-        package: 'mywebapp_publish'
+        package: 'publish_temp'
         
   deploy-PROD:
     name: "Deploy To Azure PROD env"
@@ -126,15 +114,8 @@ jobs:
       url: 'https://mywebapp-maaz.azurewebsites.net'
 
     steps:
-    - uses: actions/checkout@v4
-      
-    - name: Setup .NET 8
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 8.0.x
-    
     - name: 'Login via Azure CLI'
-      uses: azure/login@v1
+      uses: azure/login@v2
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
     
@@ -142,11 +123,10 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: 'mywebappbuildartifacts'
-        path: 'mywebapp_publish'
+        path: 'publish_temp'
    
     - name: 'Run Azure webapp deploy'
       uses: azure/webapps-deploy@v3
       with: 
         app-name: 'mywebapp-maaz'
-        # No slot-name targets the Production slot automatically
-        package: 'mywebapp_publish'
+        package: 'publish_temp'
