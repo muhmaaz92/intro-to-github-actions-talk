@@ -38,18 +38,17 @@ jobs:
         reporter: dotnet-trx
       
     - name: Publish
-      # We use the exact logic from your working PR workflow here
-      working-directory: ./mywebapp/src
-      run: dotnet publish mywebapp.csproj -c Release -o ../../publish
+      # We publish to a guaranteed absolute path called 'final_output'
+      run: dotnet publish "${{ github.workspace }}/mywebapp/src/mywebapp.csproj" -c Release -o "${{ github.workspace }}/final_output"
     
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v4
       with:
         name: mywebappbuildartifacts
-        # This matches the -o ../../publish path above
-        path: ./publish/
+        # This MUST match the -o path above exactly
+        path: "${{ github.workspace }}/final_output/"
         if-no-files-found: error
-        retention-days: 90
+        retention-days: 7
 
   deploy-DEV:
     name: "Deploy To Azure DEV env"
