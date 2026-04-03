@@ -57,7 +57,7 @@ jobs:
     needs: build-app
     environment:
       name: 'DEMO05_DEV'
-      url: 'mywebapp-maaz-dev-a2fxbybkgmhhd9hy.southeastasia-01.azurewebsites.net'
+      url: 'https://mywebapp-maaz-dev-a2fxbybkgmhhd9hy.southeastasia-01.azurewebsites.net'
 
     steps:
     - name: 'Login via Azure CLI'
@@ -84,7 +84,7 @@ jobs:
     needs: build-app
     environment:
       name: 'DEMO05_QA'
-      url: 'mywebapp-maaz-qa-f6azd0eefncpazcf.southeastasia-01.azurewebsites.net'
+      url: 'https://mywebapp-maaz-qa-f6azd0eefncpazcf.southeastasia-01.azurewebsites.net'
 
     steps:
     - name: 'Login via Azure CLI'
@@ -111,7 +111,7 @@ jobs:
     needs: [deploy-DEV, deploy-QA]
     environment:
       name: 'DEMO05_PROD'
-      url: 'mywebapp-maaz-gva7g0a7b3hxdwht.southeastasia-01.azurewebsites.net'
+      url: 'https://mywebapp-maaz-gva7g0a7b3hxdwht.southeastasia-01.azurewebsites.net'
 
     steps:
     - name: 'Login via Azure CLI'
