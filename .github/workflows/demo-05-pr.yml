@@ -1,6 +1,5 @@
 name: Demo 05 - Pull Request
 
-# Controls when the action will run. 
 on:
   pull_request:
     branches: 
@@ -9,19 +8,19 @@ on:
 jobs:
   build-test-branch:
     name: "Build and Test Of PR"
-
     runs-on: ubuntu-latest
 
     steps:
-
-    # STEP 1: UNCOMMENT THE FOLLOWING TWO LINES TO MAKE THE PR FAIL
+    # STEP 1: COMMENTED OUT FOR STEP 2 - The workflow will now pass
     # - name: Make PR Fail
     #   run: exit 1
 
-    - uses: actions/checkout@v2
+    # FIXED: Updated to v4 to resolve the deprecation failure
+    - uses: actions/checkout@v4
 
+    # FIXED: Updated to v4 to resolve the deprecation failure
     - name: Setup .NET Core 5
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 5.0.x
     
@@ -47,14 +46,11 @@ jobs:
       run: |
         dotnet publish "${{ github.workspace }}/mywebapp/src/mywebapp.csproj" -c Release -o mywebapp
     
+    # FIXED: Updated to v4 to resolve the deprecation failure
     - name: Upload a Build Artifact
-      uses: actions/upload-artifact@v2.2.0
+      uses: actions/upload-artifact@v4
       with:
-        # Artifact name
         name: mywebappbuildartifacts
-        # A file, directory or wildcard pattern that describes what to upload
         path: mywebapp/**
-        # The desired behavior if no files are found using the provided path.
         if-no-files-found: error
-        # Duration after which artifact will expire in days. 0 means using default retention.
         retention-days: 90
