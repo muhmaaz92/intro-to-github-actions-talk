@@ -34,9 +34,9 @@ jobs:
     - name: Build
       run: dotnet build "${{ github.workspace }}/mywebapp/mywebapp.sln" --configuration Release --no-restore
     
-    # - name: Test
-    #   run: |
-    #     dotnet test "${{ github.workspace }}/mywebapp/mywebapp.sln" --no-restore --verbosity normal  --logger "trx;LogFileName=test-results.trx"
+    - name: Test
+      run: |
+        dotnet test "${{ github.workspace }}/mywebapp/mywebapp.sln" --no-restore --verbosity normal  --logger "trx;LogFileName=test-results.trx"
 
     - name: Test Report
       # Updated to v1.9.1 (or latest) to fix 'set-output' deprecations
